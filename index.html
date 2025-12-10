@@ -37,10 +37,42 @@ a { color:#d4af37; text-decoration:none; }
 .input-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(80px,1fr)); gap:10px; }
 .confirm-btn { padding:10px; margin-top:12px; width:100%; background:#2d5016; border:2px solid #6ba53d; color:white; cursor:pointer; border-radius:6px; }
 
-/* --- HISTORY W/ ACCORDION --- */
+/* --- HISTORY W/ ACCORDION & DELETE --- */
 .history-wrapper { margin-bottom:20px; }
 .history-block { overflow:hidden; transition:max-height 0.45s ease, opacity 0.45s ease; }
-.history-item { background:rgba(255,255,255,0.05); padding:10px; margin-bottom:10px; border-left:3px solid #d4af37; border-radius:4px; }
+.history-item {
+    background:rgba(255,255,255,0.05);
+    padding:10px;
+    margin-bottom:10px;
+    border-left:3px solid #d4af37;
+    border-radius:4px;
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+}
+.history-header-row {
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+}
+.history-main-text { flex:1; }
+.delete-btn {
+    background:#ff6b6b;
+    color:white;
+    border:none;
+    width:24px;
+    height:24px;
+    border-radius:50%;
+    cursor:pointer;
+    font-size:12px;
+    font-weight:bold;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+}
+.delete-btn:hover { background:#ff5252; }
 .toggle-btn { cursor:pointer; color:#d4af37; text-align:center; display:block; margin-top:8px; }
 
 /* --- STATISTICS --- */
@@ -160,11 +192,7 @@ a { color:#d4af37; text-decoration:none; }
 </div>
 
 <script>
-// Execute only after DOM ready to avoid null references
 document.addEventListener('DOMContentLoaded', function(){
-    /* =============================
-       INITIAL STATE
-    ============================= */
     const state = {
         selectedPlayer:null,
         diceSelection:{ d4:0,d6:0,d8:0,d20:0,d100:0 },
@@ -172,15 +200,12 @@ document.addEventListener('DOMContentLoaded', function(){
     };
     ['guuak','aurelas','edgaar'].forEach(p=>{ if(!state.playerData[p]) state.playerData[p]=[]; });
 
-    // DOM refs
     const validateBtn = document.getElementById('validateBtn');
     const inputSection = document.getElementById('inputSection');
     const inputGrid = document.getElementById('inputGrid');
     const confirmBtn = document.getElementById('confirmBtn');
 
-    /* =============================
-       TAB SYSTEM
-    ============================= */
+    // Tabs
     document.querySelectorAll('.tab').forEach(tab=>{
         tab.addEventListener('click',()=>{
             document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
@@ -192,9 +217,7 @@ document.addEventListener('DOMContentLoaded', function(){
         });
     });
 
-    /* =============================
-       DICE SELECTION
-    ============================= */
+    // Dice
     function updateDiceDisplay(){
         Object.keys(state.diceSelection).forEach(d=>{
             const countEl = document.querySelector(`[data-count="${d}"]`);
@@ -220,9 +243,7 @@ document.addEventListener('DOMContentLoaded', function(){
         updateDiceDisplay();
     }));
 
-    /* =============================
-       PLAYER SELECTION
-    ============================= */
+    // Player selection
     document.querySelectorAll('.player-button').forEach(btn=>btn.addEventListener('click',()=>{
         state.selectedPlayer = btn.dataset.player;
         document.querySelectorAll('.player-button').forEach(b=>b.style.opacity=.5);
@@ -231,9 +252,7 @@ document.addEventListener('DOMContentLoaded', function(){
         updateDiceDisplay();
     }));
 
-    /* =============================
-       VALIDATE & INPUT FORM
-    ============================= */
+    // Validate dice selection
     validateBtn.addEventListener('click', ()=>{
         inputGrid.innerHTML='';
         Object.entries(state.diceSelection).forEach(([dice,count])=>{
@@ -250,16 +269,14 @@ document.addEventListener('DOMContentLoaded', function(){
         inputSection.classList.add('visible');
     });
 
-    /* =============================
-       SAVE RESULTS
-    ============================= */
+    // Save results
     confirmBtn.addEventListener('click', ()=>{
         const inputs = inputGrid.querySelectorAll('input');
         const rolls={};
         let valid=true;
 
         inputs.forEach(inp=>{
-            const v = parseInt(inp.value);
+            const v = parseInt(inp.value,10);
             const d = inp.dataset.dice;
             if(isNaN(v) || v<1){ valid=false; inp.style.borderColor='red'; }
             else{
@@ -278,30 +295,43 @@ document.addEventListener('DOMContentLoaded', function(){
         refreshAll();
     });
 
-    /* =============================
-       HISTORY + ACCORDION
-    ============================= */
+    // History rendering with real indexes and delete
     function renderHistory(player){
         const container = document.getElementById(`history-wrapper-${player}`);
         const data = state.playerData[player];
-        if(!data.length){ container.innerHTML = "<p>Aucun lancer...</p>"; return; }
+        if(!data.length){
+            container.innerHTML = "<p>Aucun lancer...</p>";
+            return;
+        }
 
-        const last3 = data.slice(-3).reverse();
-        const rest = data.slice(0,-3).reverse();
+        const last3Indexes = [];
+        for(let i = data.length - 1; i >= 0 && last3Indexes.length < 3; i--){
+            last3Indexes.push(i);
+        }
+
+        const restIndexes = [];
+        for(let i = data.length - 1 - last3Indexes.length; i >= 0; i--){
+            restIndexes.push(i);
+        }
 
         let html = "<div class='history-block' id='hb-"+player+"' style='max-height:500px;opacity:1;'>";
-        last3.forEach(e=> html += formatRoll(e));
+        last3Indexes.forEach(i => {
+            html += formatRoll(data[i], player, i);
+        });
         html += "</div>";
 
-        if(rest.length){
+        if(restIndexes.length){
             html += `<div class='history-block hidden' id='hb-full-${player}' style='max-height:0;opacity:0;'>`;
-            rest.forEach(e=> html += formatRoll(e));
+            restIndexes.forEach(i => {
+                html += formatRoll(data[i], player, i);
+            });
             html += `</div>`;
             html += `<span class='toggle-btn' data-target='${player}'>🔽 Afficher tout l'historique</span>`;
         }
+
         container.innerHTML = html;
 
-        if(rest.length){
+        if(restIndexes.length){
             const btn = container.querySelector('.toggle-btn');
             const block = container.querySelector(`#hb-full-${player}`);
             btn.onclick = ()=>{
@@ -321,19 +351,35 @@ document.addEventListener('DOMContentLoaded', function(){
         }
     }
 
-    function formatRoll(r){
-        let s = "<div class='history-item'>";
+    function formatRoll(r, player, realIndex){
+        let s = `<div class='history-item' data-player='${player}' data-index='${realIndex}'>`;
+        s += `<div class="history-header-row">`;
+        s += `<div class="history-main-text">`;
         for(const [d,vals] of Object.entries(r.rolls)){
             s += `<b>${d.toUpperCase()}</b>: ${vals.join(', ')}<br>`;
         }
         s += `<div style='color:#a89968;font-size:0.85em;margin-top:4px;'>${r.timestamp}</div>`;
-        s += "</div>";
+        s += `</div>`;
+        s += `<button class='delete-btn' data-player='${player}' data-index='${realIndex}'>🗑</button>`;
+        s += `</div>`;
+        s += `</div>`;
         return s;
     }
 
-    /* =============================
-       STATS
-    ============================= */
+    document.addEventListener('click', function(e){
+        if(e.target.classList.contains('delete-btn')){
+            const player = e.target.dataset.player;
+            const index = parseInt(e.target.dataset.index,10);
+            if(!Number.isInteger(index) || index < 0 || index >= state.playerData[player].length) return;
+            if(confirm('Supprimer ce lancer ?')){
+                state.playerData[player].splice(index, 1);
+                localStorage.setItem('dndDiceData', JSON.stringify(state.playerData));
+                refreshAll();
+            }
+        }
+    });
+
+    // Stats
     function computeStats(values){
         const s=[...values].sort((a,b)=>a-b);
         const avg = s.reduce((a,b)=>a+b,0)/s.length;
@@ -364,9 +410,7 @@ document.addEventListener('DOMContentLoaded', function(){
         grid.innerHTML = html;
     }
 
-    /* =============================
-       MENESTRELS
-    ============================= */
+    // Menestrels stats
     function updateMenestrels(){
         const grid = document.getElementById('stats-menestrels');
         const players=['guuak','aurelas','edgaar'];
@@ -390,21 +434,17 @@ document.addEventListener('DOMContentLoaded', function(){
         grid.innerHTML = html;
     }
 
-    /* =============================
-       REFRESH ALL
-    ============================= */
     function refreshAll(){
         ['guuak','aurelas','edgaar'].forEach(p=>{
             renderHistory(p);
             updateStats(p);
         });
         updateMenestrels();
-        // re-apply any UI niceties if needed
     }
 
-    // initial render
     refreshAll();
-}); // DOMContentLoaded
+    updateDiceDisplay();
+});
 </script>
 
 </body>
