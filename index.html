@@ -3,449 +3,198 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Guuak's bad Luck Tracker</title>
+<title>Guuak's bad Luck Tracker — Complete</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-/* --- GLOBAL STYLES --- */
-body { font-family: Georgia, serif; background:#0f1a2b; color:#e8d7c3; padding:20px; }
-h1 { text-align:center; color:#d4af37; margin-bottom:20px; }
-a { color:#d4af37; text-decoration:none; }
-
-/* --- TABS --- */
-.tabs { display:flex; justify-content:center; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
-.tab { padding:10px 16px; border:2px solid #8b7355; border-radius:6px; cursor:pointer; background:#1b2b47; color:#e8d7c3; transition:0.3s; }
-.tab.active { background:#d4af37; color:#1b2b47; }
-
-/* --- SECTIONS --- */
-.section { display:none; border:2px solid #8b7355; padding:20px; border-radius:8px; background:#1b2b47; opacity:0; transform:translateY(6px); transition:opacity .35s ease, transform .35s ease; }
-.section.active { display:block; opacity:1; transform:translateY(0); }
-.section-title { font-size:1.6em; text-align:center; color:#d4af37; margin-bottom:15px; }
-
-/* --- DICE SELECTION --- */
-.dice-container { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:16px; margin-bottom:20px; }
-.dice-item { text-align:center; }
-.dice-icon { width:70px; height:70px; border:2px solid #d4af37; border-radius:8px; background:#8b7355; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:.2s; margin:0 auto; }
-.dice-icon.selected { background:#d4af37; color:#1b2b47; transform:scale(1.1); }
-.dice-controls { margin-top:8px; display:flex; justify-content:center; gap:6px; }
-.arrow-btn { width:32px; height:32px; background:#4a3f35; border:1px solid #8b7355; color:#d4af37; cursor:pointer; border-radius:4px; }
-.dice-count { font-weight:bold; }
-.validate-btn { padding:12px; margin-top:10px; width:100%; background:#b8860b; color:white; border:2px solid #d4af37; cursor:pointer; border-radius:6px; }
-.validate-btn:disabled { opacity:.5; cursor:not-allowed; }
-
-/* --- INPUT SECTION --- */
-.input-section { display:none; margin-top:14px; padding-top:12px; border-top:2px solid #8b7355; }
-.input-section.visible { display:block; }
-.input-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(80px,1fr)); gap:10px; }
-.confirm-btn { padding:10px; margin-top:12px; width:100%; background:#2d5016; border:2px solid #6ba53d; color:white; cursor:pointer; border-radius:6px; }
-
-/* --- HISTORY W/ ACCORDION & DELETE --- */
-.history-wrapper { margin-bottom:20px; }
-.history-block { overflow:hidden; transition:max-height 0.45s ease, opacity 0.45s ease; }
-.history-item {
-    background:rgba(255,255,255,0.05);
-    padding:10px;
-    margin-bottom:10px;
-    border-left:3px solid #d4af37;
-    border-radius:4px;
-    position:relative;
-    display:flex;
-    flex-direction:column;
-    gap:6px;
-}
-.history-header-row {
-    display:flex;
-    align-items:flex-start;
-    gap:10px;
-}
-.history-main-text { flex:1; }
-.delete-btn {
-    background:#ff6b6b;
-    color:white;
-    border:none;
-    width:24px;
-    height:24px;
-    border-radius:50%;
-    cursor:pointer;
-    font-size:12px;
-    font-weight:bold;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    flex-shrink:0;
-}
-.delete-btn:hover { background:#ff5252; }
-.toggle-btn { cursor:pointer; color:#d4af37; text-align:center; display:block; margin-top:8px; }
-
-/* --- STATISTICS --- */
-.stats-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px; }
-.stat-item { background:rgba(255,255,255,0.05); padding:12px; border-radius:6px; border:1px solid #8b7355; text-align:center; }
-.crit-success { color:#6be36b; font-weight:bold; }
-.crit-fail { color:#ff6b6b; font-weight:bold; }
-
-/* small screens */
-@media (max-width:600px){ .dice-icon{width:56px;height:56px} }
+body{font-family:Georgia,serif;background:#0f1a2b;color:#e8d7c3;padding:20px}
+h1{text-align:center;color:#d4af37;margin-bottom:20px}
+.tabs{display:flex;justify-content:center;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.tab{padding:10px 16px;border:2px solid #8b7355;border-radius:6px;cursor:pointer;background:#1b2b47;color:#e8d7c3;transition:.3s}
+.tab.active{background:#d4af37;color:#1b2b47}
+.section{display:none;border:2px solid #8b7355;padding:20px;border-radius:8px;background:#1b2b47;opacity:0;transform:translateY(6px);transition:opacity .35s ease,transform .35s ease}
+.section.active{display:block;opacity:1;transform:translateY(0)}
+.section-title{font-size:1.6em;text-align:center;color:#d4af37;margin-bottom:15px}
+.dice-container{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:16px;margin-bottom:20px}
+.dice-item{text-align:center}
+.dice-icon{width:70px;height:70px;border:2px solid #d4af37;border-radius:8px;background:#8b7355;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.2s;margin:0 auto}
+.dice-icon.selected{background:#d4af37;color:#1b2b47;transform:scale(1.1)}
+.arrow-btn{width:32px;height:32px;background:#4a3f35;border:1px solid #8b7355;color:#d4af37;cursor:pointer;border-radius:4px}
+.dice-count{font-weight:bold;display:inline-block;min-width:28px;text-align:center}
+.validate-btn{padding:12px;margin-top:10px;width:100%;background:#b8860b;color:white;border:2px solid #d4af37;cursor:pointer;border-radius:6px}
+.validate-btn:disabled{opacity:.5;cursor:not-allowed}
+.input-section{display:none;margin-top:14px;padding-top:12px;border-top:2px solid #8b7355}
+.input-section.visible{display:block}
+.input-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:10px}
+.confirm-btn{padding:10px;margin-top:12px;width:100%;background:#2d5016;border:2px solid #6ba53d;color:white;cursor:pointer;border-radius:6px}
+.history-wrapper{margin-bottom:20px}
+.history-block{overflow:hidden;transition:max-height .45s ease,opacity .45s ease}
+.history-item{background:rgba(255,255,255,0.05);padding:10px;margin-bottom:10px;border-left:3px solid #d4af37;border-radius:4px;display:flex;justify-content:space-between;align-items:flex-start}
+.history-left{flex:1}
+.delete-btn{background:#ff6b6b;color:white;border:none;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:14px;font-weight:bold}
+.toggle-btn{cursor:pointer;color:#d4af37;text-align:center;display:block;margin-top:8px}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:12px}
+.stat-item{background:rgba(255,255,255,0.05);padding:12px;border-radius:6px;border:1px solid #8b7355;text-align:center}
+.canvas-wrap{margin-top:12px;background:#0f2033;padding:10px;border-radius:6px}
+.small{color:#a89968;font-size:.85rem}
+@media(max-width:600px){.dice-icon{width:56px;height:56px}}
 </style>
 </head>
 <body>
 <h1>🍀 Guuak's bad Luck Tracker 🍀</h1>
-
-<!-- TABS -->
+<div style="display:flex;gap:10px;justify-content:center;margin-bottom:12px;">
+  <button id="csvExport" class="validate-btn">⬇️ Export CSV</button>
+  
+</div>
 <div class="tabs">
-    <div class="tab active" data-tab="lancer">🎲 Lancer</div>
-    <div class="tab" data-tab="guuak">🎅🏼 Guuak</div>
-    <div class="tab" data-tab="aurelas">🧙 Aurelas</div>
-    <div class="tab" data-tab="edgaar">👱 Edgaar</div>
-    <div class="tab" data-tab="menestrels">⭐ Ménestrels</div>
+  <div class="tab active" data-tab="lancer">🎲 Lancer</div>
+  <div class="tab" data-tab="guuak">🎅🏼 Guuak</div>
+  <div class="tab" data-tab="aurelas">🧙 Aurelas</div>
+  <div class="tab" data-tab="edgaar">👱 Edgaar</div>
+  <div class="tab" data-tab="menestrels">⭐ Ménestrels</div>
 </div>
 
-<!-- SECTION LANCER -->
 <div class="section active" id="section-lancer">
-    <h2 class="section-title">🎲 Lancer les dés</h2>
-
-    <div class="dice-container">
-        <div class="dice-item">
-            <div class="dice-icon" data-dice="d4">D4</div>
-            <div class="dice-controls">
-                <button class="arrow-btn minus-btn" data-dice="d4">−</button>
-                <span class="dice-count" data-count="d4">0</span>
-                <button class="arrow-btn plus-btn" data-dice="d4">+</button>
-            </div>
-        </div>
-
-        <div class="dice-item">
-            <div class="dice-icon" data-dice="d6">D6</div>
-            <div class="dice-controls">
-                <button class="arrow-btn minus-btn" data-dice="d6">−</button>
-                <span class="dice-count" data-count="d6">0</span>
-                <button class="arrow-btn plus-btn" data-dice="d6">+</button>
-            </div>
-        </div>
-
-        <div class="dice-item">
-            <div class="dice-icon" data-dice="d8">D8</div>
-            <div class="dice-controls">
-                <button class="arrow-btn minus-btn" data-dice="d8">−</button>
-                <span class="dice-count" data-count="d8">0</span>
-                <button class="arrow-btn plus-btn" data-dice="d8">+</button>
-            </div>
-        </div>
-
-        <div class="dice-item">
-            <div class="dice-icon" data-dice="d20">D20</div>
-            <div class="dice-controls">
-                <button class="arrow-btn minus-btn" data-dice="d20">−</button>
-                <span class="dice-count" data-count="d20">0</span>
-                <button class="arrow-btn plus-btn" data-dice="d20">+</button>
-            </div>
-        </div>
-
-        <div class="dice-item">
-            <div class="dice-icon" data-dice="d100">D100</div>
-            <div class="dice-controls">
-                <button class="arrow-btn minus-btn" data-dice="d100">−</button>
-                <span class="dice-count" data-count="d100">0</span>
-                <button class="arrow-btn plus-btn" data-dice="d100">+</button>
-            </div>
-        </div>
+  <h2 class="section-title">🎲 Lancer les dés</h2>
+  <div class="dice-container">
+    <div class="dice-item">
+      <div class="dice-icon" data-dice="d4"><img src="d4.png" alt="D4" style="width:60%;height:60%"></div>
+      <div style="margin-top:8px"><button class="arrow-btn minus-btn" data-dice="d4">−</button> <span class="dice-count" data-count="d4">0</span> <button class="arrow-btn plus-btn" data-dice="d4">+</button></div>
     </div>
-
-    <div style="margin-top:10px; text-align:center;">
-        <button class="player-button" data-player="guuak">🎅🏼 GUUAK</button>
-        <button class="player-button" data-player="aurelas">🧙 AURELAS</button>
-        <button class="player-button" data-player="edgaar">👱 EDGAÄR</button>
+    <div class="dice-item">
+      <div class="dice-icon" data-dice="d6"><img src="d6.png" alt="D6" style="width:60%;height:60%"></div>
+      <div style="margin-top:8px"><button class="arrow-btn minus-btn" data-dice="d6">−</button> <span class="dice-count" data-count="d6">0</span> <button class="arrow-btn plus-btn" data-dice="d6">+</button></div>
     </div>
-
-    <button id="validateBtn" class="validate-btn" disabled>Valider la sélection</button>
-
-    <div class="input-section" id="inputSection">
-        <div class="input-grid" id="inputGrid"></div>
-        <button id="confirmBtn" class="confirm-btn">Enregistrer les résultats</button>
+    <div class="dice-item">
+      <div class="dice-icon" data-dice="d8"><img src="d8.png" alt="D8" style="width:60%;height:60%"></div>
+      <div style="margin-top:8px"><button class="arrow-btn minus-btn" data-dice="d8">−</button> <span class="dice-count" data-count="d8">0</span> <button class="arrow-btn plus-btn" data-dice="d8">+</button></div>
     </div>
+    <div class="dice-item">
+      <div class="dice-icon" data-dice="d20"><img src="d20.png" alt="D20" style="width:60%;height:60%"></div>
+      <div style="margin-top:8px"><button class="arrow-btn minus-btn" data-dice="d20">−</button> <span class="dice-count" data-count="d20">0</span> <button class="arrow-btn plus-btn" data-dice="d20">+</button></div>
+    </div>
+    <div class="dice-item">
+      <div class="dice-icon" data-dice="d100"><img src="d100.png" alt="D100" style="width:60%;height:60%"></div>
+      <div style="margin-top:8px"><button class="arrow-btn minus-btn" data-dice="d100">−</button> <span class="dice-count" data-count="d100">0</span> <button class="arrow-btn plus-btn" data-dice="d100">+</button></div>
+    </div>
+  </div>
+  <div style="text-align:center;margin-bottom:12px">
+    <button class="player-button" data-player="guuak">🎅🏼 GUUAK</button>
+    <button class="player-button" data-player="aurelas">🧙 AURELAS</button>
+    <button class="player-button" data-player="edgaar">👱 EDGAÄR</button>
+  </div>
+  <button id="validateBtn" class="validate-btn" disabled>Valider la sélection</button>
+  <div class="input-section" id="inputSection">
+    <div class="input-grid" id="inputGrid"></div>
+    <button id="confirmBtn" class="confirm-btn">Enregistrer les résultats</button>
+  </div>
 </div>
 
-<!-- PLAYER SECTIONS -->
 <div class="section" id="section-guuak">
-    <h2 class="section-title">🎅🏼 GUUAK</h2>
-    <div class="history-wrapper" id="history-wrapper-guuak"></div>
-    <h3 style="text-align:center;color:#d4af37;margin-top:18px;">📊 Statistiques</h3>
-    <div class="stats-grid" id="stats-guuak"></div>
+  <h2 class="section-title">🎅🏼 Guuak <button id="reset-guuak" class="validate-btn" style="margin-left:12px;background:#b23a3a">🗑️ Effacer tout</button></h2>
+  <div class="history-wrapper" id="history-wrapper-guuak"></div>
+  <h3 style="text-align:center;color:#d4af37;margin-top:18px;">📊 Statistiques</h3>
+  <div class="stats-grid" id="stats-guuak"></div>
+  <div class="canvas-wrap"><canvas id="chart-guuak" height="140"></canvas></div>
 </div>
 
 <div class="section" id="section-aurelas">
-    <h2 class="section-title">🧙 AURELAS</h2>
-    <div class="history-wrapper" id="history-wrapper-aurelas"></div>
-    <h3 style="text-align:center;color:#d4af37;margin-top:18px;">📊 Statistiques</h3>
-    <div class="stats-grid" id="stats-aurelas"></div>
+  <h2 class="section-title">🧙 Aurelas <button id="reset-aurelas" class="validate-btn" style="margin-left:12px;background:#b23a3a">🗑️ Effacer tout</button></h2>
+  <div class="history-wrapper" id="history-wrapper-aurelas"></div>
+  <h3 style="text-align:center;color:#d4af37;margin-top:18px;">📊 Statistiques</h3>
+  <div class="stats-grid" id="stats-aurelas"></div>
+  <div class="canvas-wrap"><canvas id="chart-aurelas" height="140"></canvas></div>
 </div>
 
 <div class="section" id="section-edgaar">
-    <h2 class="section-title">👱 EDGAÄR</h2>
-    <div class="history-wrapper" id="history-wrapper-edgaar"></div>
-    <h3 style="text-align:center;color:#d4af37;margin-top:18px;">📊 Statistiques</h3>
-    <div class="stats-grid" id="stats-edgaar"></div>
+  <h2 class="section-title">👱 Edgaar <button id="reset-edgaar" class="validate-btn" style="margin-left:12px;background:#b23a3a">🗑️ Effacer tout</button></h2>
+  <div class="history-wrapper" id="history-wrapper-edgaar"></div>
+  <h3 style="text-align:center;color:#d4af37;margin-top:18px;">📊 Statistiques</h3>
+  <div class="stats-grid" id="stats-edgaar"></div>
+  <div class="canvas-wrap"><canvas id="chart-edgaar" height="140"></canvas></div>
 </div>
 
-<!-- MÉNESTRELS -->
 <div class="section" id="section-menestrels">
-    <h2 class="section-title">⭐ Les 3 Ménestrels ⭐</h2>
-    <p style="text-align:center;color:#a89968;font-style:italic;">Statistiques combinées</p>
-    <div class="stats-grid" id="stats-menestrels"></div>
+  <h2 class="section-title">⭐ Les 3 Ménestrels ⭐</h2>
+  <p style="text-align:center;color:#a89968;font-style:italic;">Statistiques combinées</p>
+  <div class="stats-grid" id="stats-menestrels"></div>
+  <div class="canvas-wrap"><canvas id="chart-menestrels" height="140"></canvas></div>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function(){
-    const state = {
-        selectedPlayer:null,
-        diceSelection:{ d4:0,d6:0,d8:0,d20:0,d100:0 },
-        playerData: JSON.parse(localStorage.getItem("dndDiceData") || "{}")
-    };
-    ['guuak','aurelas','edgaar'].forEach(p=>{ if(!state.playerData[p]) state.playerData[p]=[]; });
+  const players = ['guuak','aurelas','edgaar'];
+  const storageKey = 'dndDiceData';
+  const state = { selectedPlayer:null, diceSelection:{d4:0,d6:0,d8:0,d20:0,d100:0}, playerData: JSON.parse(localStorage.getItem(storageKey) || '{}') };
+  players.forEach(p=>{ if(!state.playerData[p]) state.playerData[p]=[]; });
 
-    const validateBtn = document.getElementById('validateBtn');
-    const inputSection = document.getElementById('inputSection');
-    const inputGrid = document.getElementById('inputGrid');
-    const confirmBtn = document.getElementById('confirmBtn');
+  // Refs
+  const tabs = document.querySelectorAll('.tab');
+  const validateBtn = document.getElementById('validateBtn');
+  const inputSection = document.getElementById('inputSection');
+  const inputGrid = document.getElementById('inputGrid');
+  const confirmBtn = document.getElementById('confirmBtn');
 
-    // Tabs
-    document.querySelectorAll('.tab').forEach(tab=>{
-        tab.addEventListener('click',()=>{
-            document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-            tab.classList.add('active');
-            const target = tab.getAttribute('data-tab');
-            document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-            const targetEl = document.getElementById(`section-${target}`);
-            if(targetEl) targetEl.classList.add('active');
-        });
-    });
+  // Tabs
+  tabs.forEach(t=> t.addEventListener('click', ()=>{ tabs.forEach(x=>x.classList.remove('active')); t.classList.add('active'); const target = t.dataset.tab; document.querySelectorAll('.section').forEach(s=>s.classList.remove('active')); const el = document.getElementById('section-'+target); if(el) el.classList.add('active'); }));
 
-    // Dice
-    function updateDiceDisplay(){
-        Object.keys(state.diceSelection).forEach(d=>{
-            const countEl = document.querySelector(`[data-count="${d}"]`);
-            if(countEl) countEl.textContent = state.diceSelection[d];
-            const icon = document.querySelector(`.dice-icon[data-dice="${d}"]`);
-            if(icon){
-                if(state.diceSelection[d]>0) icon.classList.add('selected');
-                else icon.classList.remove('selected');
-            }
-        });
-        validateBtn.disabled = !(state.selectedPlayer && Object.values(state.diceSelection).some(v=>v>0));
-    }
+  // Dice controls
+  function updateDiceDisplay(){ Object.keys(state.diceSelection).forEach(d=>{ const el = document.querySelector(`[data-count="${d}"]`); if(el) el.textContent = state.diceSelection[d]; const icon = document.querySelector(`.dice-icon[data-dice="${d}"]`); if(icon){ if(state.diceSelection[d]>0) icon.classList.add('selected'); else icon.classList.remove('selected'); }}); validateBtn.disabled = !(state.selectedPlayer && Object.values(state.diceSelection).some(v=>v>0)); }
+  document.querySelectorAll('.plus-btn').forEach(btn=> btn.addEventListener('click', ()=>{ const d = btn.dataset.dice; state.diceSelection[d]++; updateDiceDisplay(); }));
+  document.querySelectorAll('.minus-btn').forEach(btn=> btn.addEventListener('click', ()=>{ const d = btn.dataset.dice; if(state.diceSelection[d]>0) state.diceSelection[d]--; updateDiceDisplay(); }));
 
-    document.querySelectorAll('.plus-btn').forEach(btn=>btn.addEventListener('click',()=>{
-        const d = btn.dataset.dice;
-        state.diceSelection[d]++;
-        updateDiceDisplay();
-    }));
+  // Player selection
+  document.querySelectorAll('.player-button').forEach(b=> b.addEventListener('click', ()=>{ state.selectedPlayer = b.dataset.player; document.querySelectorAll('.player-button').forEach(x=>x.style.opacity=.6); b.style.opacity=1; state.diceSelection={d4:0,d6:0,d8:0,d20:0,d100:0}; updateDiceDisplay(); }));
 
-    document.querySelectorAll('.minus-btn').forEach(btn=>btn.addEventListener('click',()=>{
-        const d = btn.dataset.dice;
-        if(state.diceSelection[d]>0) state.diceSelection[d]--;
-        updateDiceDisplay();
-    }));
+  // Build inputs
+  validateBtn.addEventListener('click', ()=>{
+    inputGrid.innerHTML='';
+    Object.entries(state.diceSelection).forEach(([dice,count])=>{ for(let i=1;i<=count;i++){ const wrap = document.createElement('div'); const label = document.createElement('label'); label.textContent = `${dice.toUpperCase()} #${i}`; const input = document.createElement('input'); input.type='number'; input.min=1; input.dataset.dice=dice; wrap.appendChild(label); wrap.appendChild(input); inputGrid.appendChild(wrap); }});
+    inputSection.classList.add('visible'); if(window.anime) anime({targets:inputSection, opacity:[0,1], translateY:[6,0], duration:300});
+  });
 
-    // Player selection
-    document.querySelectorAll('.player-button').forEach(btn=>btn.addEventListener('click',()=>{
-        state.selectedPlayer = btn.dataset.player;
-        document.querySelectorAll('.player-button').forEach(b=>b.style.opacity=.5);
-        btn.style.opacity=1;
-        state.diceSelection={ d4:0,d6:0,d8:0,d20:0,d100:0 };
-        updateDiceDisplay();
-    }));
+  // Save
+  confirmBtn.addEventListener('click', ()=>{
+    const inputs = inputGrid.querySelectorAll('input'); let valid=true; const rolls={}; inputs.forEach(inp=>{ const v = parseInt(inp.value,10); const d = inp.dataset.dice; if(isNaN(v) || v<1){ valid=false; inp.style.borderColor='red'; } else { inp.style.borderColor=''; if(!rolls[d]) rolls[d]=[]; rolls[d].push(v); }});
+    if(!valid){ alert('Valeurs invalides'); return; }
+    state.playerData[state.selectedPlayer].push({ id: (crypto && crypto.randomUUID)? crypto.randomUUID() : 'id-'+Date.now(), timestamp: new Date().toLocaleString('fr-FR'), rolls });
+    localStorage.setItem(storageKey, JSON.stringify(state.playerData)); inputSection.classList.remove('visible'); state.diceSelection={d4:0,d6:0,d8:0,d20:0,d100:0}; updateDiceDisplay(); refreshAll();
+  });
 
-    // Validate dice selection
-    validateBtn.addEventListener('click', ()=>{
-        inputGrid.innerHTML='';
-        Object.entries(state.diceSelection).forEach(([dice,count])=>{
-            for(let i=1;i<=count;i++){
-                const wrap = document.createElement('div');
-                const label = document.createElement('label');
-                label.textContent = `${dice.toUpperCase()} #${i}`;
-                const input = document.createElement('input');
-                input.type = 'number'; input.min = 1; input.dataset.dice = dice;
-                wrap.appendChild(label); wrap.appendChild(input);
-                inputGrid.appendChild(wrap);
-            }
-        });
-        inputSection.classList.add('visible');
-    });
+  // Render history
+  function createHistoryNode(entry, player, index){ const item = document.createElement('div'); item.className='history-item'; item.dataset.index=index; const left=document.createElement('div'); left.className='history-left'; for(const [d,vals] of Object.entries(entry.rolls)){ const line = document.createElement('div'); line.innerHTML = '<strong>'+d.toUpperCase()+'</strong>: '+vals.join(', '); left.appendChild(line); } const ts = document.createElement('div'); ts.className='small'; ts.style.marginTop='6px'; ts.textContent = entry.timestamp; left.appendChild(ts); const del = document.createElement('button'); del.className='delete-btn'; del.textContent='🗑'; del.dataset.player=player; del.dataset.index=index; item.appendChild(left); item.appendChild(del); del.addEventListener('click', ()=>{ if(confirm('Supprimer ce lancer ?')){ state.playerData[player].splice(index,1); localStorage.setItem(storageKey, JSON.stringify(state.playerData)); refreshAll(); } }); return item; }
 
-    // Save results
-    confirmBtn.addEventListener('click', ()=>{
-        const inputs = inputGrid.querySelectorAll('input');
-        const rolls={};
-        let valid=true;
+  function renderHistory(player){ const container = document.getElementById('history-wrapper-'+player); const arr = state.playerData[player] || []; if(!arr.length){ container.innerHTML = '<p>Aucun lancer...</p>'; return; } container.innerHTML=''; const last3 = []; for(let i=arr.length-1;i>=0&&last3.length<3;i--) last3.push(i); const rest = []; for(let i=arr.length-1-last3.length;i>=0;i--) rest.push(i); const visibleBlock = document.createElement('div'); visibleBlock.className='history-block'; last3.forEach(idx=> visibleBlock.appendChild(createHistoryNode(arr[idx], player, idx))); container.appendChild(visibleBlock); if(rest.length){ const hiddenBlock = document.createElement('div'); hiddenBlock.className='history-block hidden'; hiddenBlock.style.maxHeight='0px'; hiddenBlock.style.opacity=0; rest.forEach(idx=> hiddenBlock.appendChild(createHistoryNode(arr[idx], player, idx))); container.appendChild(hiddenBlock); const toggle = document.createElement('div'); toggle.className='toggle-btn'; toggle.textContent = '🔽 Afficher tout l\'historique'; container.appendChild(toggle); toggle.addEventListener('click', ()=>{ const isHidden = hiddenBlock.classList.contains('hidden'); if(isHidden){ hiddenBlock.classList.remove('hidden'); hiddenBlock.style.maxHeight = hiddenBlock.scrollHeight + 'px'; hiddenBlock.style.opacity=1; toggle.textContent='🔼 Réduire l\'historique'; if(window.anime) anime({targets:hiddenBlock,height:[0,hiddenBlock.scrollHeight+'px'],opacity:[0,1],duration:400,easing:'easeOutCubic'}); } else { if(window.anime) anime({targets:hiddenBlock,height:[hiddenBlock.offsetHeight,0],opacity:[1,0],duration:350,easing:'easeInCubic',complete:()=>{ hiddenBlock.classList.add('hidden'); hiddenBlock.style.maxHeight='0px'; }}); toggle.textContent='🔽 Afficher tout l\'historique'; } }); }
+  }
 
-        inputs.forEach(inp=>{
-            const v = parseInt(inp.value,10);
-            const d = inp.dataset.dice;
-            if(isNaN(v) || v<1){ valid=false; inp.style.borderColor='red'; }
-            else{
-                inp.style.borderColor='';
-                if(!rolls[d]) rolls[d]=[];
-                rolls[d].push(v);
-            }
-        });
-        if(!valid){ alert("Valeurs invalides"); return; }
+  // Stats
+  function computeStats(vals){ if(!vals||!vals.length) return null; const s=[...vals].sort((a,b)=>a-b); const avg = s.reduce((a,b)=>a+b,0)/s.length; const mid=Math.floor(s.length/2); const median = s.length%2? s[mid] : (s[mid-1]+s[mid])/2; const variance = s.reduce((a,v)=>a+(v-avg)*(v-avg),0)/s.length; return { avg:avg.toFixed(1), median, std:Math.sqrt(variance).toFixed(2) }; }
 
-        state.playerData[state.selectedPlayer].push({ timestamp:new Date().toLocaleString('fr-FR'), rolls });
-        localStorage.setItem('dndDiceData', JSON.stringify(state.playerData));
-        inputSection.classList.remove('visible');
-        state.diceSelection={ d4:0,d6:0,d8:0,d20:0,d100:0 };
-        updateDiceDisplay();
-        refreshAll();
-    });
+  function updateStats(player){ const grid=document.getElementById('stats-'+player); const arr=state.playerData[player]||[]; const agg={d4:[],d6:[],d8:[],d20:[],d100:[]}; let cs=0,cf=0; arr.forEach(e=>{ for(const [d,vals] of Object.entries(e.rolls)){ agg[d].push(...vals); if(d==='d20') vals.forEach(v=>{ if(v===20) cs++; if(v===1) cf++; }); }}); let html = '<div class="stat-item"><div class="small">Succès Critiques</div><div style="font-size:1.2rem">'+cs+'</div></div>'; html += '<div class="stat-item"><div class="small">Échecs Critiques</div><div style="font-size:1.2rem">'+cf+'</div></div>'; for(const [d,vals] of Object.entries(agg)){ if(!vals.length) continue; const st=computeStats(vals); html += '<div class="stat-item"><b>'+d.toUpperCase()+'</b><br>Moy: '+st.avg+'<br>Méd: '+st.median+'<br>σ: '+st.std+'</div>'; } grid.innerHTML = html; }
 
-    // History rendering with real indexes and delete
-    function renderHistory(player){
-        const container = document.getElementById(`history-wrapper-${player}`);
-        const data = state.playerData[player];
-        if(!data.length){
-            container.innerHTML = "<p>Aucun lancer...</p>";
-            return;
-        }
+  // Menestrels stats
+  function updateMenestrels(){ const grid = document.getElementById('stats-menestrels'); const agg={d4:[],d6:[],d8:[],d20:[],d100:[]}; let cs=0,cf=0; players.forEach(p=> state.playerData[p].forEach(e=>{ for(const [d,vals] of Object.entries(e.rolls)){ agg[d].push(...vals); if(d==='d20') vals.forEach(v=>{ if(v===20) cs++; if(v===1) cf++; }); }})); let html = '<div class="stat-item"><div class="small">Succès Critiques</div><div style="font-size:1.2rem">'+cs+'</div></div>'; html += '<div class="stat-item"><div class="small">Échecs Critiques</div><div style="font-size:1.2rem">'+cf+'</div></div>'; for(const [d,vals] of Object.entries(agg)){ if(!vals.length) continue; const st=computeStats(vals); html += '<div class="stat-item"><b>'+d.toUpperCase()+'</b><br>Moy: '+st.avg+'<br>Méd: '+st.median+'<br>σ: '+st.std+'</div>'; } grid.innerHTML = html; }
 
-        const last3Indexes = [];
-        for(let i = data.length - 1; i >= 0 && last3Indexes.length < 3; i--){
-            last3Indexes.push(i);
-        }
+  // Charts
+  const charts = {};
+  function countsFrom(arr){ const c={d4:0,d6:0,d8:0,d20:0,d100:0}; arr.forEach(e=>{ for(const k of Object.keys(c)){ if(e.rolls[k]) c[k]+= e.rolls[k].length; }}); return c; }
+  function renderChart(player){ const canvas = document.getElementById('chart-'+player); if(!canvas) return; const ctx = canvas.getContext('2d'); const counts = countsFrom(state.playerData[player]||[]); const labels = Object.keys(counts); const values = Object.values(counts); if(charts[player]) charts[player].destroy(); charts[player] = new Chart(ctx,{ type:'bar', data:{ labels, datasets:[{ label:'Nombre de dés lancés', data:values, backgroundColor:'rgba(212,175,55,0.9)'}] }, options:{responsive:true,maintainAspectRatio:false} }); }
+  function renderChartMenestrels(){ const canvas = document.getElementById('chart-menestrels'); if(!canvas) return; const ctx = canvas.getContext('2d'); const combined = [].concat(...players.map(p=> state.playerData[p]||[])); const counts = countsFrom(combined); const labels = Object.keys(counts); const values = Object.values(counts); if(charts['menestrels']) charts['menestrels'].destroy(); charts['menestrels'] = new Chart(ctx,{ type:'bar', data:{ labels, datasets:[{ label:'Ménestrels - total dés', data:values, backgroundColor:'rgba(100,150,255,0.9)'}] }, options:{responsive:true,maintainAspectRatio:false} }); }
 
-        const restIndexes = [];
-        for(let i = data.length - 1 - last3Indexes.length; i >= 0; i--){
-            restIndexes.push(i);
-        }
+  function refreshAll(){ players.forEach(p=>{ renderHistory(p); updateStats(p); renderChart(p); }); updateMenestrels(); renderChartMenestrels(); }
 
-        let html = "<div class='history-block' id='hb-"+player+"' style='max-height:500px;opacity:1;'>";
-        last3Indexes.forEach(i => {
-            html += formatRoll(data[i], player, i);
-        });
-        html += "</div>";
+  // CSV export
+  document.getElementById('csvExport').addEventListener('click', ()=>{ const rows=['player,id,timestamp,dice,values']; players.forEach(p=>{ (state.playerData[p]||[]).forEach((r,idx)=>{ for(const [d,vals] of Object.entries(r.rolls)){ rows.push(p+','+idx+','+r.timestamp+','+d+',"'+vals.join(' ')+'"'); }}); }); const blob = new Blob([rows.join('\n')],{type:'text/csv'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='guuak_dice_data.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href); });
 
-        if(restIndexes.length){
-            html += `<div class='history-block hidden' id='hb-full-${player}' style='max-height:0;opacity:0;'>`;
-            restIndexes.forEach(i => {
-                html += formatRoll(data[i], player, i);
-            });
-            html += `</div>`;
-            html += `<span class='toggle-btn' data-target='${player}'>🔽 Afficher tout l'historique</span>`;
-        }
+  // Resets
+  document.getElementById('resetAll').addEventListener('click', ()=>{ if(!confirm('Supprimer toutes les données locales ?')) return; players.forEach(p=> state.playerData[p]=[]); localStorage.setItem(storageKey, JSON.stringify(state.playerData)); refreshAll(); });
+  document.getElementById('reset-guuak').addEventListener('click', ()=>{ if(confirm('Effacer tous les lancers de Guuak ?')){ state.playerData['guuak']=[]; localStorage.setItem(storageKey, JSON.stringify(state.playerData)); refreshAll(); }});
+  document.getElementById('reset-aurelas').addEventListener('click', ()=>{ if(confirm('Effacer tous les lancers d\'Aurelas ?')){ state.playerData['aurelas']=[]; localStorage.setItem(storageKey, JSON.stringify(state.playerData)); refreshAll(); }});
+  document.getElementById('reset-edgaar').addEventListener('click', ()=>{ if(confirm('Effacer tous les lancers d\'Edgaar ?')){ state.playerData['edgaar']=[]; localStorage.setItem(storageKey, JSON.stringify(state.playerData)); refreshAll(); }});
 
-        container.innerHTML = html;
-
-        if(restIndexes.length){
-            const btn = container.querySelector('.toggle-btn');
-            const block = container.querySelector(`#hb-full-${player}`);
-            btn.onclick = ()=>{
-                const hidden = block.classList.contains('hidden');
-                if(hidden){
-                    block.classList.remove('hidden');
-                    block.style.maxHeight = block.scrollHeight+'px';
-                    block.style.opacity = 1;
-                    btn.textContent = "🔼 Réduire l'historique";
-                } else {
-                    block.style.maxHeight = '0px';
-                    block.style.opacity = 0;
-                    setTimeout(()=> block.classList.add('hidden'), 450);
-                    btn.textContent = "🔽 Afficher tout l'historique";
-                }
-            };
-        }
-    }
-
-    function formatRoll(r, player, realIndex){
-        let s = `<div class='history-item' data-player='${player}' data-index='${realIndex}'>`;
-        s += `<div class="history-header-row">`;
-        s += `<div class="history-main-text">`;
-        for(const [d,vals] of Object.entries(r.rolls)){
-            s += `<b>${d.toUpperCase()}</b>: ${vals.join(', ')}<br>`;
-        }
-        s += `<div style='color:#a89968;font-size:0.85em;margin-top:4px;'>${r.timestamp}</div>`;
-        s += `</div>`;
-        s += `<button class='delete-btn' data-player='${player}' data-index='${realIndex}'>🗑</button>`;
-        s += `</div>`;
-        s += `</div>`;
-        return s;
-    }
-
-    document.addEventListener('click', function(e){
-        if(e.target.classList.contains('delete-btn')){
-            const player = e.target.dataset.player;
-            const index = parseInt(e.target.dataset.index,10);
-            if(!Number.isInteger(index) || index < 0 || index >= state.playerData[player].length) return;
-            if(confirm('Supprimer ce lancer ?')){
-                state.playerData[player].splice(index, 1);
-                localStorage.setItem('dndDiceData', JSON.stringify(state.playerData));
-                refreshAll();
-            }
-        }
-    });
-
-    // Stats
-    function computeStats(values){
-        const s=[...values].sort((a,b)=>a-b);
-        const avg = s.reduce((a,b)=>a+b,0)/s.length;
-        const mid = Math.floor(s.length/2);
-        const median = s.length%2? s[mid] : (s[mid-1]+s[mid])/2;
-        const variance = s.reduce((a,v)=>a+(v-avg)*(v-avg),0)/s.length;
-        return { avg:avg.toFixed(1), median, std:Math.sqrt(variance).toFixed(2) };
-    }
-
-    function updateStats(player){
-        const grid = document.getElementById(`stats-${player}`);
-        const data = state.playerData[player];
-        const agg = { d4:[],d6:[],d8:[],d20:[],d100:[] };
-        let cs=0, cf=0;
-        data.forEach(e=>{
-            for(const [d,vals] of Object.entries(e.rolls)){
-                agg[d].push(...vals);
-                if(d==="d20") vals.forEach(v=>{ if(v===20)cs++; if(v===1)cf++; });
-            }
-        });
-        let html = `<div class='stat-item'><div class='crit-success'>Succès Critiques</div>${cs}</div>`;
-        html += `<div class='stat-item'><div class='crit-fail'>Échecs Critiques</div>${cf}</div>`;
-        for(const [d,vals] of Object.entries(agg)){
-            if(!vals.length) continue;
-            const st = computeStats(vals);
-            html += `<div class='stat-item'><b>${d.toUpperCase()}</b><br>Moy: ${st.avg}<br>Méd: ${st.median}<br>σ: ${st.std}</div>`;
-        }
-        grid.innerHTML = html;
-    }
-
-    // Menestrels stats
-    function updateMenestrels(){
-        const grid = document.getElementById('stats-menestrels');
-        const players=['guuak','aurelas','edgaar'];
-        const agg={ d4:[],d6:[],d8:[],d20:[],d100:[] };
-        let cs=0,cf=0;
-        players.forEach(p=>{
-            state.playerData[p].forEach(e=>{
-                for(const [d,vals] of Object.entries(e.rolls)){
-                    agg[d].push(...vals);
-                    if(d==="d20") vals.forEach(v=>{ if(v===20)cs++; if(v===1)cf++; });
-                }
-            });
-        });
-        let html = `<div class='stat-item'><div class='crit-success'>Succès Critiques</div>${cs}</div>`;
-        html += `<div class='stat-item'><div class='crit-fail'>Échecs Critiques</div>${cf}</div>`;
-        for(const [d,vals] of Object.entries(agg)){
-            if(!vals.length) continue;
-            const st = computeStats(vals);
-            html += `<div class='stat-item'><b>${d.toUpperCase()}</b><br>Moy: ${st.avg}<br>Méd: ${st.median}<br>σ: ${st.std}</div>`;
-        }
-        grid.innerHTML = html;
-    }
-
-    function refreshAll(){
-        ['guuak','aurelas','edgaar'].forEach(p=>{
-            renderHistory(p);
-            updateStats(p);
-        });
-        updateMenestrels();
-    }
-
-    refreshAll();
-    updateDiceDisplay();
+  // initial
+  refreshAll(); updateDiceDisplay();
 });
 </script>
-
 </body>
 </html>
